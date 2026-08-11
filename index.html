@@ -271,10 +271,13 @@
     padding: 0 16px;
   }
   .hero-chips span { white-space: nowrap; }
+  .nb { white-space: nowrap; }   /* mantiene unida una sigla con su separador */
   .hero-trust {
     margin-top: 14px;
     color: rgba(255,255,255,0.6);
     font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+    max-width: 620px; margin-left: auto; margin-right: auto; padding: 0 16px;
+    text-wrap: balance;   /* dos líneas parejas en vez de una llena y una corta */
   }
   .hero-trust strong { color: rgba(255,255,255,0.9); font-weight: 500; }
 
@@ -289,6 +292,9 @@
     font-size: clamp(32px, 4vw, 52px);
     line-height: 1.1; margin-bottom: 24px;
     color: var(--ink);
+    /* Reparte las palabras entre las líneas en vez de llenar la primera y dejar
+       una huérfana abajo. Los navegadores viejos lo ignoran y no pasa nada. */
+    text-wrap: balance;
   }
   .section-lede {
     font-size: 19px; max-width: 680px;
@@ -989,9 +995,18 @@
     .hero-heartbeat { position: relative; bottom: auto; margin: 32px 0 -40px; max-width: 100%; overflow: hidden; opacity: 0.85; }
     .hero-heartbeat img { width: 100%; }
     .hero-footer { position: static; margin-top: 32px; padding: 0 20px; font-size: 9px; letter-spacing: 0.2em; }
+    /* Los "·" son elementos flex sueltos, así que al envolver acaban abriendo
+       una línea. En móvil se ocultan y cada sello va en su renglón, centrado. */
+    .hero-chips { flex-direction: column; gap: 7px 0; }
+    .hero-chips span:nth-child(even) { display: none; }
+    .hero-trust { letter-spacing: 0.18em; line-height: 1.8; }
 
     /* SECTION TITLES — smaller */
     .section-title { font-size: clamp(26px, 7vw, 36px); }
+    /* Los <br> de los titulares están puestos para el ancho de escritorio. En
+       móvil cada mitad se vuelve a partir y deja huérfanas ("it." solo en una
+       línea). Se ocultan y el navegador reparte el texto él mismo. */
+    .section-title br { display: none; }
     .section-lede { font-size: 15px; margin-bottom: 40px; }
     .section-eyebrow { font-size: 12px; letter-spacing: 0.3em; }
 
@@ -1166,7 +1181,7 @@
       <span>20 selected by jury</span>
     </div>
     <div class="hero-trust">
-      Used on stage at <strong>WBC</strong> · <strong>Brewers Cup</strong> · <strong>USBC</strong> by 23 champions since 2016
+      Used on stage at <span class="nb"><strong>WBC</strong> ·</span> <span class="nb"><strong>Brewers Cup</strong> ·</span> <span class="nb"><strong>USBC</strong></span> by 23 champions since 2016
     </div>
   </div>
 </header>
