@@ -133,6 +133,9 @@
     color: white;
   }
   .nav.scrolled { background: rgba(255,255,255,0.96); color: var(--ink); backdrop-filter: blur(8px); }
+  /* ---- Botón de menú (solo móvil) ---- */
+  .nav-toggle { display: none; }
+  .nav-scrim { display: none; }
   .nav-brand { font-family: var(--serif); font-size: 18px; letter-spacing: 0.15em; display: inline-flex; align-items: center; text-decoration: none; color: inherit; }
   .nav-logo {
     height: clamp(44px, 4.2vw, 60px);
@@ -472,12 +475,22 @@
     line-height: 0.95;
   }
   .wof-title .gold {
+    /* Color sólido de base: si el navegador no recorta el degradado sobre el
+       texto, la palabra sigue viéndose en vez de quedar transparente. */
+    color: #A8804F;
     background: linear-gradient(180deg, #B89060 0%, #8B6F45 100%);
     -webkit-background-clip: text;
     background-clip: text;
-    color: transparent;
+    -webkit-text-fill-color: transparent;
     font-style: italic;
     margin: 0 0.04em;
+    /* La itálica de una serif se sale de su caja por la derecha y el recorte
+       la cortaba: la "f" aparecía mordida. Este aire la deja entera. */
+    padding: 0 0.1em;
+  }
+  /* Si no hay soporte de recorte, se devuelve el relleno sólido. */
+  @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+    .wof-title .gold { -webkit-text-fill-color: #A8804F; background: none; }
   }
   .wof-tagline {
     margin-top: 32px;
@@ -978,7 +991,64 @@
   /* ============ RESPONSIVE — TABLET / PHONE ============ */
   @media (max-width: 900px) {
     .nav { padding: 14px 20px; }
-    .nav-links { display: none; }
+    /* ---- Menú en móvil ----
+       Antes los enlaces se ocultaban y no había nada en su lugar: en un
+       teléfono no se podía llegar a ninguna sección, ni al botón de Apply.
+       Ahora el mismo bloque de enlaces se convierte en un panel lateral, así
+       que no hay marcado duplicado y el listener de #apply los sigue viendo. */
+    .nav-toggle {
+      display: flex; flex-direction: column; justify-content: center;
+      gap: 5px; width: 44px; height: 44px;
+      padding: 0; margin: 0; border: 0; background: none;
+      color: inherit; cursor: pointer; z-index: 2;
+    }
+    .nav-toggle span {
+      display: block; width: 24px; height: 2px; background: currentColor;
+      transition: transform 0.3s ease, opacity 0.2s ease;
+    }
+    /* Con el panel abierto el fondo es crema, así que el aspa va en tinta */
+    .nav.menu-open { color: var(--ink); }
+    .nav.menu-open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav.menu-open .nav-toggle span:nth-child(2) { opacity: 0; }
+    .nav.menu-open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    .nav-links {
+      display: flex; flex-direction: column; justify-content: center;
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: min(320px, 86vw);
+      gap: 0; padding: 96px 32px 40px;
+      background: var(--paper);
+      box-shadow: -8px 0 40px rgba(0,0,0,0.18);
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+    }
+    .nav.menu-open .nav-links { transform: none; }
+    .nav-links a {
+      color: var(--ink); font-size: 15px; letter-spacing: 0.12em;
+      padding: 18px 0; border-bottom: 1px solid var(--line);
+      opacity: 1;
+    }
+    .nav-links a:last-child {
+      border-bottom: none; margin-top: 22px;
+      background: var(--accent); color: #fff;
+      text-align: center; padding: 16px 20px;
+    }
+    .nav-scrim {
+      display: block; position: fixed; inset: 0;
+      background: rgba(26,26,26,0.5);
+      /* visibility, no solo opacity: un velo transparente al 0 seguiría
+         interceptando los toques de toda la pantalla. */
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+      z-index: -1;
+    }
+    .nav.menu-open .nav-scrim { opacity: 1; visibility: visible; }
+    body.menu-locked { overflow: hidden; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .nav-links, .nav-scrim, .nav-toggle span { transition: none; }
+    }
     .nav-brand { font-size: 16px; }
   }
 
@@ -1083,7 +1153,14 @@
     .wof-card.is-champion:nth-child(even) .wof-coffee { border-left-color: var(--accent); }
     .wof-coffee { max-width: 100%; }
     .wof-marker { left: 18px; }
-    .wof-card .wof-card-year { left: 18px; top: -6px; transform: none; padding: 2px 8px; }
+    /* El año estaba encima de la línea, tapándola y rozando la tarjeta de
+       arriba. Se alinea con el contenido y se le da aire por arriba. */
+    .wof-card .wof-card-year {
+      left: 52px; top: 2px; transform: none;
+      padding: 0; background: transparent; font-size: 12px;
+    }
+    .wof-card { padding-top: 42px; }
+    .wof-card.is-champion { padding-top: 52px; }
     .wof-portrait[style*="width:140px"] { width: 110px !important; height: 110px !important; }
     .wof-footer { font-size: 10px !important; letter-spacing: 0.2em !important; padding: 0 8px; }
     .wof-footer .countries { word-break: break-word; line-height: 1.8; }
@@ -1158,7 +1235,11 @@
   <a href="https://lapalmayeltucan.com" class="nav-brand" aria-label="La Palma &amp; El Tucán — back to the main site">
     <img src="assets/logos/la-palma-logo.svg" alt="La Palma & El Tucán" class="nav-logo" />
   </a>
-  <div class="nav-links">
+  <button class="nav-toggle" id="navToggle" type="button"
+          aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
     <a href="#why">Why</a>
     <a href="#who">Who it's for</a>
     <a href="#how">How it works</a>
@@ -1166,6 +1247,7 @@
     <a href="#champions">Champions</a>
     <a href="#apply" class="btn-link">Apply</a>
   </div>
+  <div class="nav-scrim" id="navScrim"></div>
 </nav>
 
 <!-- HERO — BEAT Invitation 2026 (Come Back) -->
@@ -2319,6 +2401,46 @@ var BEAT_VIDEO = { mode: 'link', linkOk: false, uploadedPath: null, uploading: f
     };
     xhr.send(file);
   }
+})();
+
+/* ---- Menú de móvil ---- */
+(function () {
+  var nav = document.getElementById('nav');
+  var boton = document.getElementById('navToggle');
+  var panel = document.getElementById('navLinks');
+  var velo = document.getElementById('navScrim');
+  if (!nav || !boton || !panel) return;
+
+  function abrir(si) {
+    nav.classList.toggle('menu-open', si);
+    boton.setAttribute('aria-expanded', si ? 'true' : 'false');
+    boton.setAttribute('aria-label', si ? 'Close menu' : 'Open menu');
+    document.body.classList.toggle('menu-locked', si);
+  }
+
+  boton.addEventListener('click', function () {
+    abrir(!nav.classList.contains('menu-open'));
+  });
+  if (velo) velo.addEventListener('click', function () { abrir(false); });
+
+  // Al tocar un enlace el menú se cierra: si no, el panel tapa la sección
+  // a la que se acaba de saltar. Apply abre el modal, y ahí también estorba.
+  panel.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', function () { abrir(false); });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && nav.classList.contains('menu-open')) {
+      abrir(false);
+      boton.focus();
+    }
+  });
+
+  // Si se gira el teléfono o se agranda la ventana, el panel deja de existir
+  // como tal: hay que soltar el bloqueo del scroll o la página queda trabada.
+  window.addEventListener('resize', function () {
+    if (window.innerWidth > 768 && nav.classList.contains('menu-open')) abrir(false);
+  });
 })();
 
   /* ---- Nav background on scroll ---- */
