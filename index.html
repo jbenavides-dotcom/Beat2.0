@@ -965,6 +965,19 @@
     filter: grayscale(15%);
   }
   .founder-text h2 { margin-bottom: 32px; }
+
+    /* La landing solo carga Apercu Light y PPHatton Medium: no hay ningun
+       archivo de fuente en negrita, asi que font-weight no engrosa nada
+       (medido: el texto ocupa lo mismo a peso 300 que a 700). Se engrosa el
+       trazo del glifo, que es lo mas cercano a una negrita real, y se oscurece
+       un punto el color para reforzar el contraste. */
+    .founder-text strong {
+      font-weight: 500;
+      color: var(--ink-deep);
+      -webkit-text-stroke: 0.4px currentColor;
+      paint-order: stroke fill;
+    }
+
   .founder-text p {
     font-size: 17px; line-height: 1.7;
     margin-bottom: 24px;
@@ -1680,8 +1693,8 @@
         <div class="section-eyebrow">A note from Felipe</div>
         <h2 class="section-title">On trust, and the people who give it.</h2>
         <p>This picture is from the day Jooyeon Jeon won the 2019 World Barista Championship in Boston. <strong>She used a coffee from our farm. No sponsorship, no contract, no logo on her stage.</strong> She picked our Sidra because it was good.</p>
-        <p>What stayed with me was the risk she took. She bet a year of preparation on one producer's harvest, on us, and she had no reason to. Plenty of competitors did the same before her and after her. That trust is what built this farm.</p>
-        <p>Every coffee on the wall above was paid for, by the competitors themselves or by the people around them. They earned it. With BEAT we want to take one thing off that list. Twenty boxes a year, so the coffee is not the part that stops you.</p>
+        <p>What stayed with me was the risk she took. She bet a year of preparation on one producer's harvest, on us, and she had no reason to. Plenty of competitors did the same before her and after her. <strong>That trust is what built this farm.</strong></p>
+        <p>Every coffee on the wall above was paid for, by the competitors themselves or by the people around them. <strong>They earned it. With BEAT we want to take one thing off that list. Twenty boxes a year, so the coffee is not the part that stops you.</strong></p>
         <div class="founder-sig">
           Felipe
           <small>Co-founder · La Palma &amp; El Tucán</small>
