@@ -1527,7 +1527,13 @@
     <div class="wof-card" data-wof-item>
       <div class="wof-marker"><span class="wof-dot"></span></div>
       <div class="wof-card-year">2018</div>
-      <div class="wof-portrait"><img src="assets/wof/tom-kuyken.jpg" alt="Tom Kuyken Norway Brewers Cup Champion 2018" /></div>
+      <!-- La foto que había aquí no es Tom: Felipe la identificó como otro
+           competidor, turco. Se deja el marcador de iniciales hasta tener el
+           retrato real; mostrar la cara equivocada es peor que no mostrar
+           ninguna, y es justo lo que pidió corregir. -->
+      <div class="wof-portrait" style="background:linear-gradient(135deg,#1a1a1a,#444); display:flex;align-items:center;justify-content:center;">
+        <span style="color:var(--gold);font-family:var(--serif);font-size:34px;">TK</span>
+      </div>
       <div class="wof-card-info">
         <div class="name">Tom Kuyken</div>
         <div class="achievement">Norway Brewers Cup Champion</div>
@@ -1607,7 +1613,7 @@
     <div class="wof-card" data-wof-item>
       <div class="wof-marker"><span class="wof-dot"></span></div>
       <div class="wof-card-year">2020</div>
-      <div class="wof-portrait"><img src="assets/wof/cole-torode-2020.jpg" alt="Cole Torode Canada Barista Championship Finalist 2020" /></div>
+      <div class="wof-portrait"><img src="assets/wof/sam-neely.jpg" alt="Cole Torode Canada Barista Championship Finalist 2020" /></div>
       <div class="wof-card-info">
         <div class="name">Cole Torode</div>
         <div class="achievement">Canada Barista Championship · Finalist</div>
@@ -1617,7 +1623,7 @@
     <div class="wof-card" data-wof-item>
       <div class="wof-marker"><span class="wof-dot"></span></div>
       <div class="wof-card-year">2020</div>
-      <div class="wof-portrait"><img src="assets/wof/sam-neely.jpg" alt="Sam Neely US Barista Championship Finalist 2020 Amethyst Coffee" /></div>
+      <div class="wof-portrait"><img src="assets/wof/cole-torode-2020.jpg" alt="Sam Neely US Barista Championship Finalist 2020 Amethyst Coffee" /></div>
       <div class="wof-card-info">
         <div class="name">Sam Neely</div>
         <div class="achievement">US Barista Championship · Finalist</div>
@@ -2336,6 +2342,19 @@ var BEAT_VIDEO = { mode: 'link', linkOk: false, uploadedPath: null, uploading: f
       .slice(0, 40);
   }
 
+  /* El bucket solo admite estos cinco tipos. Se decide por extensión para no
+     depender de lo que informe el sistema operativo. */
+  function tipoPorExtension(ext) {
+    var MIMES = {
+      mp4: 'video/mp4',  m4v: 'video/mp4',
+      mov: 'video/quicktime', qt: 'video/quicktime',
+      avi: 'video/x-msvideo',
+      mkv: 'video/x-matroska',
+      webm: 'video/webm'
+    };
+    return MIMES[ext] || 'video/mp4';
+  }
+
   function upload(file) {
     BEAT_VIDEO.uploadedPath = null;
     if (file.size > MAX) {
@@ -2372,7 +2391,12 @@ var BEAT_VIDEO = { mode: 'link', linkOk: false, uploadedPath: null, uploading: f
     xhr.open('POST', SUPABASE_URL + '/storage/v1/object/beat-videos/' + path, true);
     xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
     xhr.setRequestHeader('Authorization', 'Bearer ' + SUPABASE_ANON_KEY);
-    xhr.setRequestHeader('Content-Type', file.type || 'video/mp4');
+    /* El tipo se deriva de la extensión, no de file.type. Cuando el sistema no
+       reconoce el archivo — pasa con los .MP4 que salen de cámara — el navegador
+       informa application/octet-stream, que es un valor real y por tanto pasaba
+       el fallback anterior (file.type || ...). El bucket lo rechazaba con 400 y
+       la subida moría ahí. La extensión ya está validada por el accept. */
+    xhr.setRequestHeader('Content-Type', tipoPorExtension(ext));
     xhr.setRequestHeader('x-upsert', 'false');
 
     xhr.upload.onprogress = function (e) {
@@ -2389,7 +2413,14 @@ var BEAT_VIDEO = { mode: 'link', linkOk: false, uploadedPath: null, uploading: f
         say(status, '\u2713 Uploaded. You can send your application now.', 'ok');
       } else {
         bar.style.width = '0%';
-        say(status, 'Upload failed (' + xhr.status + '). Try again, or paste a link instead.', 'bad');
+        /* Un número suelto no le dice nada a quien está aplicando. Los dos
+           casos que de verdad ocurren llevan su propia explicación. */
+        var motivo = xhr.status === 400
+          ? 'We could not read that file. Export it as MP4 or MOV and try again, or paste a link instead.'
+          : (xhr.status === 413
+              ? 'That file is too large. The limit is 200 MB — export it smaller, or paste a link instead.'
+              : 'Upload failed (' + xhr.status + '). Try again, or paste a link instead.');
+        say(status, motivo, 'bad');
       }
     };
     xhr.onerror = function () {
