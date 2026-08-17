@@ -725,6 +725,11 @@
     border-color: var(--accent);
     box-shadow: 0 10px 48px rgba(196,30,92,0.28);
   }
+  /* La unica foto a color del muro, y a proposito: Felipe la quiere asi.
+     El resto lleva grayscale(15%); aqui estorbaba. Tres clases de
+     especificidad, de modo que gana tambien dentro de las media queries
+     (que no suman especificidad por si mismas). */
+  .wof-card.is-champion .wof-portrait img { filter: none; }
   .wof-card.is-champion .wof-dot {
     width: 20px; height: 20px; border-color: var(--accent);
   }
