@@ -119,7 +119,7 @@ Push to GitHub. GitHub Pages auto-redeploys from `main`:
 git push origin main
 ```
 
-Live URL: https://fsardi19.github.io/lpet-beat-2026/
+Live URL: https://beat.lapalmayeltucan.com/
 
 ---
 

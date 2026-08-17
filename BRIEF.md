@@ -213,7 +213,7 @@ All 6 remaining files in `landing-beat-2026/competidores/` — upload after rota
 | Styling | CSS modules + Tailwind utility (same as roasted-series) |
 | Icons | Lucide React |
 | Form backend | N8N webhook → HubSpot custom object `beat_submissions` |
-| Hosting | GitHub Pages new repo `lpet-beat-2026` (matches existing pattern) |
+| Hosting | GitHub Pages new repo `Beat2.0` (matches existing pattern) |
 | Analytics | GA4 + Meta Pixel (per Marketing Training doc) |
 | Image CDN | Cloudinary `dsylu9a7k`, folder `lpet-beat/` |
 | Branding | Move agency campaign style: serif elegant + #C41E5C accent |
@@ -225,7 +225,7 @@ All 6 remaining files in `landing-beat-2026/competidores/` — upload after rota
 1. ✅ This brief — done
 2. ⏳ Felipe answers 10 open decisions
 3. ⏳ Image edits (rotations + crop + Cloudinary upload)
-4. ⏳ Repo init `lpet-beat-2026` from `lpet-roasted-series-usa` template
+4. ⏳ Repo init `Beat2.0` from `lpet-roasted-series-usa` template
 5. ⏳ Components: Hero, Rubric, FormSubmission, ChampionsGrid, FAQ, Footer
 6. ⏳ Backend: N8N webhook + HubSpot custom object
 7. ⏳ Tracking: GA4 events `view_section`, `start_application`, `submit_application`, `vote_click`
