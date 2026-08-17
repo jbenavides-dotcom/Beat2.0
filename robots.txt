@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Los videos de las postulaciones viven en Supabase, no aquí, pero por si
+# algún día se sirve algo desde el sitio: nada de esa carpeta se indexa.
+Disallow: /submissions/
+
+Sitemap: https://beat.lapalmayeltucan.com/sitemap.xml

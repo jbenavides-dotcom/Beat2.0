@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  BEAT 2026/27 — la landing es una sola página; las secciones son anclas
+  dentro de ella, y las anclas no van en un sitemap.
+  La página de Shopify vive en otro dominio y Shopify publica su propio
+  sitemap, así que no se lista aquí.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://beat.lapalmayeltucan.com/</loc>
+    <lastmod>2026-08-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
