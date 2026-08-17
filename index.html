@@ -222,14 +222,19 @@
     text-shadow: 0 4px 24px rgba(0,0,0,0.85), 0 0 12px rgba(0,0,0,0.5);
   }
   .hero-sub {
-    font-family: 'Jost', -apple-system, sans-serif;
-    font-size: clamp(15px, 1.4vw, 17px);
+    /* Antes iba en Jost 600 y era el unico parrafo de la pagina con otra
+       familia. Ahora sigue la referencia de prosa. */
+    font-family: var(--sans);
+    font-size: 19px;
+    font-weight: 300;
     max-width: 560px; margin: 36px auto 0;
-    line-height: 1.55;
+    line-height: 1.7;
     opacity: 1;
     color: #ffffff;
-    font-weight: 600;
-    text-shadow: 0 2px 12px rgba(155,23,70,0.45), 0 1px 3px rgba(0,0,0,0.18);
+    /* El 600 que habia aqui era una negrita inventada: de Apercu solo existe
+       el archivo Light. Al quitarla el texto perdia contraste contra la foto
+       rosa, asi que la legibilidad la sostiene ahora la sombra, reforzada. */
+    text-shadow: 0 1px 2px rgba(0,0,0,0.42), 0 2px 20px rgba(120,10,50,0.62);
   }
   .hero-cta-group { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
   .btn {
@@ -296,9 +301,14 @@
        una huérfana abajo. Los navegadores viejos lo ignoran y no pasa nada. */
     text-wrap: balance;
   }
+  /* ---- Prosa: cualquier parrafo de lectura corrida ----
+     La referencia es el bloque "On trust, and the people who give it."
+     Los textos de tarjeta (.step p, .rubric-aside p) NO entran aqui: van en
+     columnas estrechas y necesitan su propio tamano. */
+  .prosa { font-size: 17px; line-height: 1.7; color: var(--ink); margin-bottom: 24px; }
   .section-lede {
-    font-size: 19px; max-width: 680px;
-    margin-bottom: 64px; opacity: 0.8;
+    font-size: 17px; line-height: 1.7; max-width: 680px;
+    margin-bottom: 64px; opacity: 1;
   }
 
   /* ============ WHY EXISTS ============ */
@@ -330,17 +340,19 @@
     text-shadow: 0 2px 18px rgba(0,0,0,0.7), 0 1px 4px rgba(0,0,0,0.5);
   }
   .stage-sub {
-    font-family: 'Jost', -apple-system, sans-serif;
-    font-size: clamp(17px, 1.5vw, 21px);
-    line-height: 1.55;
+    /* Iba en Jost 600, como el hero. Misma correccion: la familia de la
+       prosa y la legibilidad sobre la foto a cargo de la sombra. */
+    font-family: var(--sans);
+    font-size: 19px;
+    line-height: 1.7;
     margin-top: 28px;
     max-width: 640px;
     margin-left: auto;
     margin-right: auto;
     color: #ffffff;
     opacity: 1;
-    font-weight: 600;
-    text-shadow: 0 2px 14px rgba(0,0,0,0.65), 0 1px 3px rgba(0,0,0,0.4);
+    font-weight: 300;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.55), 0 2px 18px rgba(0,0,0,0.7);
   }
 
   /* ============ HOW IT WORKS ============ */
@@ -1023,10 +1035,12 @@
     font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
     color: var(--accent-soft); margin-bottom: 10px; font-weight: 500;
   }
-  .cta-cell p { font-size: 14px; line-height: 1.65; opacity: 0.85; margin: 0; }
+  .cta-cell p { font-size: 17px; line-height: 1.7; opacity: 1; margin: 0; }
   .cta-cell strong { color: white; }
   .final-cta h2 { color: white; max-width: 720px; margin: 0 auto 24px; }
-  .final-cta p { font-size: 19px; opacity: 0.8; max-width: 560px; margin: 0 auto 48px; }
+  .final-cta p { font-size: 17px; line-height: 1.7; opacity: 1; max-width: 560px; margin: 0 auto 48px; }
+  /* se repite el selector de la celda para que gane a la linea de arriba */
+  .final-cta .cta-cell p { margin: 0; }
   .final-cta .deadline {
     font-size: 11px; letter-spacing: 0.4em; text-transform: uppercase;
     opacity: 0.6; margin-top: 32px;
@@ -1054,7 +1068,7 @@
     .hero { min-height: auto; height: auto; padding: 18vh 20px 60px; }
     .hero h1 { font-size: clamp(32px, 9vw, 48px); margin-bottom: 20px; }
     .hero-eyebrow { margin-bottom: 20px; font-size: 15px; letter-spacing: 0.01em; padding: 0 12px; }
-    .hero-sub { font-size: 14px; max-width: none; margin: 24px 0 0; }
+    .hero-sub { font-size: 17px; line-height: 1.65; max-width: none; margin: 24px 0 0; }
     .hero-cta-group { flex-direction: column; gap: 12px; width: 100%; }
     .hero-cta-group .btn { width: 100%; padding: 16px 20px; font-size: 13px; }
     .hero-heartbeat { position: relative; bottom: auto; margin: 32px 0 -40px; max-width: 100%; overflow: hidden; opacity: 0.85; }
@@ -1072,14 +1086,14 @@
        móvil cada mitad se vuelve a partir y deja huérfanas ("it." solo en una
        línea). Se ocultan y el navegador reparte el texto él mismo. */
     .section-title br { display: none; }
-    .section-lede { font-size: 15px; margin-bottom: 40px; }
+    .section-lede { font-size: 16px; line-height: 1.65; margin-bottom: 40px; }
     .section-eyebrow { font-size: 12px; letter-spacing: 0.3em; }
 
     /* WHY */
 
     /* STAGE / ORIGIN */
     .stage { padding: 80px 20px; }
-    .stage-sub { font-size: 16px; margin-top: 20px; line-height: 1.5; }
+    .stage-sub { font-size: 17px; margin-top: 20px; line-height: 1.65; }
 
     /* HOW IT WORKS */
     .steps { grid-template-columns: 1fr; }
@@ -1176,6 +1190,7 @@
     .founder-grid { grid-template-columns: 1fr; gap: 32px; }
     .founder-image img { aspect-ratio: 4/3; }
     .founder-text p { font-size: 16px; line-height: 1.65; }
+    .prosa { font-size: 16px; line-height: 1.65; }
 
     /* FINAL CTA */
     .final-cta { padding: 80px 20px; }
@@ -1291,8 +1306,8 @@
 
     <div style="margin-top: 64px; padding-top: 48px; border-top: 1px solid var(--line); max-width: 720px;">
       <h3 style="font-family: var(--serif); font-size: 28px; line-height: 1.25; margin-bottom: 24px; color: var(--ink); font-weight: 400;">A thank-you note, written in green coffee.</h3>
-      <p style="font-size: 17px; line-height: 1.7; color: var(--ink); margin-bottom: 18px;">Competition is where this industry raises its own standards. Competitors read a coffee harder than anyone, they ask producers better questions, and what they do on stage changes what everyone expects a cup to be. Our coffee grew up inside that conversation, carried there by people who chose it.</p>
-      <p style="font-size: 17px; line-height: 1.7; color: var(--ink);">We have taken a lot from that. It is time we put something back.</p>
+      <p class="prosa" style="margin-bottom: 18px;">Competition is where this industry raises its own standards. Competitors read a coffee harder than anyone, they ask producers better questions, and what they do on stage changes what everyone expects a cup to be. Our coffee grew up inside that conversation, carried there by people who chose it.</p>
+      <p class="prosa">We have taken a lot from that. It is time we put something back.</p>
       <p style="font-size: 22px; line-height: 1.4; color: var(--ink); font-family: var(--serif); margin-top: 36px; font-style: italic;">20 boxes. 6 kilos each. No bidding war. Just craft.</p>
     </div>
 
