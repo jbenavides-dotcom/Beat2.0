@@ -2068,6 +2068,10 @@
         showError('Please paste a real video URL (e.g. https://youtube.com/...). Make sure it includes a domain.');
         return;
       }
+      if (BEAT_VIDEO.linkChecking) {
+        showError('We are still checking your video link — give it a second and try again.');
+        return;
+      }
       if (BEAT_VIDEO.linkOk === false) {
         showError('We could not open that video. Fix the link, or upload the file instead.');
         return;
@@ -2219,7 +2223,7 @@
 })();
 
 /* ---- Video field: paste a link (checked) or upload to Supabase Storage ---- */
-var BEAT_VIDEO = { mode: 'link', linkOk: false, uploadedPath: null, uploading: false };
+var BEAT_VIDEO = { mode: 'link', linkOk: null, linkChecking: false, uploadedPath: null, uploading: false };
 
 (function () {
   var tabs   = document.querySelectorAll('[data-vid-mode]');
@@ -2251,57 +2255,95 @@ var BEAT_VIDEO = { mode: 'link', linkOk: false, uploadedPath: null, uploading: f
   /* --- link checking ------------------------------------------------ */
   function say(el, msg, cls) { el.textContent = msg; el.className = el.className.split(' ')[0] + (cls ? ' ' + cls : ''); }
 
+  /* El veredicto tiene TRES estados, no dos:
+       true  -> comprobado: el jurado podra verlo
+       false -> comprobado y no se puede ver -> se bloquea el envio
+       null  -> no se pudo comprobar -> se deja pasar. Nunca se pierde una
+                postulacion real por un fallo de red nuestro.
+
+     El navegador no puede preguntarle a Vimeo ni a Drive (lo impide CORS), asi
+     que de esos se encarga un validador propio en n8n. YouTube si permite CORS:
+     se resuelve aqui mismo, instantaneo y sin gastar ejecuciones. */
+  var VALIDADOR = 'https://jhona.app.n8n.cloud/webhook/beat-validar-video?url=';
   var timer = null;
+  var memoria = {};                    // enlace ya visto -> no se repite el viaje
+
   urlEl.addEventListener('input', function () {
-    BEAT_VIDEO.linkOk = false;
+    BEAT_VIDEO.linkOk = null;
+    BEAT_VIDEO.linkChecking = false;
     clearTimeout(timer);
     var v = urlEl.value.trim();
     if (!v) { say(check, '', ''); return; }
     timer = setTimeout(function () { checkLink(v); }, 600);
   });
 
+  function veredicto(url, ok, msg, titulo, aviso) {
+    memoria[url] = { ok: ok, msg: msg, titulo: titulo, aviso: aviso };
+    if (urlEl.value.trim() !== url) return;      // ya siguio escribiendo
+    BEAT_VIDEO.linkOk = ok;
+    BEAT_VIDEO.linkChecking = false;
+    if (ok === true) {
+      say(check, '\u2713 Found' + (titulo ? ': "' + titulo + '"' : ', and it opens') +
+                 (aviso ? ' \u2014 ' + aviso : ''), 'ok');
+    } else {
+      say(check, msg, ok === false ? 'bad' : 'busy');
+    }
+  }
+
   function checkLink(url) {
     if (!/^https?:\/\/[^\s]+\.[^\s]+/.test(url)) {
-      say(check, 'That does not look like a full URL yet.', 'bad'); return;
-    }
-    var yt = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)/i.test(url);
-    var vm = /vimeo\.com\//i.test(url);
-    var gd = /drive\.google\.com|docs\.google\.com/i.test(url);
-
-    if (gd) {
-      say(check, 'Drive link received. Please confirm sharing is set to "anyone with the link" — we cannot check that from here.', 'busy');
-      BEAT_VIDEO.linkOk = true; return;
-    }
-    if (!yt && !vm) {
-      say(check, 'Link accepted. We could not verify this host automatically, so please double-check it opens in a private window.', 'busy');
-      BEAT_VIDEO.linkOk = true; return;
+      BEAT_VIDEO.linkOk = false;
+      BEAT_VIDEO.linkChecking = false;
+      say(check, 'That does not look like a full URL yet. It should start with https://', 'bad');
+      return;
     }
 
-    say(check, 'Checking the link…', 'busy');
-    var api = yt
-      ? 'https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent(url)
-      : 'https://vimeo.com/api/oembed.json?url=' + encodeURIComponent(url);
+    var ya = memoria[url];
+    if (ya) { veredicto(url, ya.ok, ya.msg, ya.titulo, ya.aviso); return; }
 
-    fetch(api)
-      .then(function (r) {
-        if (r.ok) return r.json();
-        throw new Error(r.status === 401 || r.status === 403 ? 'private' : 'missing');
-      })
+    BEAT_VIDEO.linkChecking = true;
+    say(check, 'Checking the link\u2026', 'busy');
+
+    var yt = url.match(/(?:youtube\.com\/(?:watch\?(?:[^#]*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([\w-]{11})/i);
+    if (yt) {
+      fetch('https://www.youtube.com/oembed?format=json&url=' +
+            encodeURIComponent('https://www.youtube.com/watch?v=' + yt[1]))
+        .then(function (r) {
+          if (r.ok) return r.json();
+          throw new Error(r.status === 401 || r.status === 403 ? 'private' : 'missing');
+        })
+        .then(function (d) { veredicto(url, true, '', d.title || '', ''); })
+        .catch(function (e) {
+          if (e && e.message === 'private') {
+            veredicto(url, false, 'That video is private. Set it to Unlisted or Public, otherwise the jury cannot watch it.', '', '');
+          } else if (e && e.message === 'missing') {
+            veredicto(url, false, 'No video at that address. Check for a typo, or that it was not deleted.', '', '');
+          } else {
+            veredicto(url, null, 'We could not reach YouTube to check it. Your link will be sent as is.', '', '');
+          }
+        });
+      return;
+    }
+    if (/^https?:\/\/(www\.)?(youtube\.com|youtu\.be)/i.test(url)) {
+      veredicto(url, false, 'That YouTube address has no video in it. Open the video and copy the link from the address bar.', '', '');
+      return;
+    }
+
+    /* Vimeo, Drive y cualquier otro sitio: lo resuelve el validador */
+    var lento = setTimeout(function () {
+      if (BEAT_VIDEO.linkChecking) say(check, 'Still checking the link\u2026', 'busy');
+    }, 3000);
+
+    fetch(VALIDADOR + encodeURIComponent(url))
+      .then(function (r) { if (!r.ok) throw new Error('sin respuesta'); return r.json(); })
       .then(function (d) {
-        BEAT_VIDEO.linkOk = true;
-        say(check, '\u2713 Found: "' + (d.title || 'your video') + '"' + (d.author_name ? ' \u2014 ' + d.author_name : ''), 'ok');
+        clearTimeout(lento);
+        veredicto(url, d.ok === true ? true : (d.ok === false ? false : null),
+                  d.motivo || 'We could not check that link.', d.titulo || '', d.aviso || '');
       })
-      .catch(function (e) {
-        if (e && e.message === 'private') {
-          BEAT_VIDEO.linkOk = false;
-          say(check, 'That video is private. Set it to unlisted or public, otherwise the jury cannot watch it.', 'bad');
-        } else if (e && e.message === 'missing') {
-          BEAT_VIDEO.linkOk = false;
-          say(check, 'We could not find a video at that link. Check for a typo.', 'bad');
-        } else {
-          BEAT_VIDEO.linkOk = true;
-          say(check, 'Could not reach the video host to verify. Your link will be sent as is.', 'busy');
-        }
+      .catch(function () {
+        clearTimeout(lento);
+        veredicto(url, null, 'We could not check that link automatically. Please make sure it opens in a private window \u2014 your link will be sent as is.', '', '');
       });
   }
 
