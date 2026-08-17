@@ -2277,8 +2277,11 @@ var BEAT_VIDEO = { mode: 'link', linkOk: null, linkChecking: false, uploadedPath
     timer = setTimeout(function () { checkLink(v); }, 600);
   });
 
-  function veredicto(url, ok, msg, titulo, aviso) {
-    memoria[url] = { ok: ok, msg: msg, titulo: titulo, aviso: aviso };
+  /* `grave` es un aviso en rojo que NO frena el envio: el video existe pero
+     esta cerrado. Decision de Jhonatan el 17-ago \u2014 solo se frena cuando no hay
+     nada al otro lado del enlace. */
+  function veredicto(url, ok, msg, titulo, aviso, grave) {
+    memoria[url] = { ok: ok, msg: msg, titulo: titulo, aviso: aviso, grave: grave };
     if (urlEl.value.trim() !== url) return;      // ya siguio escribiendo
     BEAT_VIDEO.linkOk = ok;
     BEAT_VIDEO.linkChecking = false;
@@ -2286,7 +2289,7 @@ var BEAT_VIDEO = { mode: 'link', linkOk: null, linkChecking: false, uploadedPath
       say(check, '\u2713 Found' + (titulo ? ': "' + titulo + '"' : ', and it opens') +
                  (aviso ? ' \u2014 ' + aviso : ''), 'ok');
     } else {
-      say(check, msg, ok === false ? 'bad' : 'busy');
+      say(check, msg, (ok === false || grave) ? 'bad' : 'busy');
     }
   }
 
@@ -2299,7 +2302,7 @@ var BEAT_VIDEO = { mode: 'link', linkOk: null, linkChecking: false, uploadedPath
     }
 
     var ya = memoria[url];
-    if (ya) { veredicto(url, ya.ok, ya.msg, ya.titulo, ya.aviso); return; }
+    if (ya) { veredicto(url, ya.ok, ya.msg, ya.titulo, ya.aviso, ya.grave); return; }
 
     BEAT_VIDEO.linkChecking = true;
     say(check, 'Checking the link\u2026', 'busy');
@@ -2312,20 +2315,20 @@ var BEAT_VIDEO = { mode: 'link', linkOk: null, linkChecking: false, uploadedPath
           if (r.ok) return r.json();
           throw new Error(r.status === 401 || r.status === 403 ? 'private' : 'missing');
         })
-        .then(function (d) { veredicto(url, true, '', d.title || '', ''); })
+        .then(function (d) { veredicto(url, true, '', d.title || '', '', false); })
         .catch(function (e) {
           if (e && e.message === 'private') {
-            veredicto(url, false, 'That video is private. Set it to Unlisted or Public, otherwise the jury cannot watch it.', '', '');
+            veredicto(url, null, 'That video is private, so the jury will not be able to watch it. You can still send it, but please set it to Unlisted or Public.', '', '', true);
           } else if (e && e.message === 'missing') {
-            veredicto(url, false, 'No video at that address. Check for a typo, or that it was not deleted.', '', '');
+            veredicto(url, false, 'No video at that address. Check for a typo, or that it was not deleted.', '', '', false);
           } else {
-            veredicto(url, null, 'We could not reach YouTube to check it. Your link will be sent as is.', '', '');
+            veredicto(url, null, 'We could not reach YouTube to check it. Your link will be sent as is.', '', '', false);
           }
         });
       return;
     }
     if (/^https?:\/\/(www\.)?(youtube\.com|youtu\.be)/i.test(url)) {
-      veredicto(url, false, 'That YouTube address has no video in it. Open the video and copy the link from the address bar.', '', '');
+      veredicto(url, false, 'That YouTube address has no video in it. Open the video and copy the link from the address bar.', '', '', false);
       return;
     }
 
@@ -2339,11 +2342,11 @@ var BEAT_VIDEO = { mode: 'link', linkOk: null, linkChecking: false, uploadedPath
       .then(function (d) {
         clearTimeout(lento);
         veredicto(url, d.ok === true ? true : (d.ok === false ? false : null),
-                  d.motivo || 'We could not check that link.', d.titulo || '', d.aviso || '');
+                  d.motivo || 'We could not check that link.', d.titulo || '', d.aviso || '', d.grave === true);
       })
       .catch(function () {
         clearTimeout(lento);
-        veredicto(url, null, 'We could not check that link automatically. Please make sure it opens in a private window \u2014 your link will be sent as is.', '', '');
+        veredicto(url, null, 'We could not check that link automatically. Please make sure it opens in a private window \u2014 your link will be sent as is.', '', '', false);
       });
   }
 
